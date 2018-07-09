@@ -2,6 +2,8 @@ from flask import Flask, Response, request
 from flask_cors import CORS
 from datetime import datetime
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import linear_kernel
 
 app = Flask(__name__)
 CORS(app)
@@ -41,6 +43,24 @@ def search():
     movies = pd.read_csv('./tmdb_5000_movies.csv', low_memory=False)
     titles = movies[movies['title'].str.contains(searchword, case=False)]['title'].head(10)
     return(Response(titles.to_json(orient='records'), mimetype='application/json'))
+
+@app.route('/recommend')
+def recommend():
+    title = request.args.get('title', '')
+    tfidf = TfidfVectorizer(stop_words='english')
+    movies = pd.read_csv('./tmdb_5000_movies.csv', low_memory=False)
+    movies['overview'] = movies['overview'].fillna('')
+    tfidf_matrix = tfidf.fit_transform(movies['overview'])
+    # Compute the cosine similarity matrix
+    cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
+    #Construct a reverse map of indices and movie titles
+    indices = pd.Series(movies.index, index=movies['title'].str.lower()).drop_duplicates()
+    idx = indices[title]
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    sim_scores = sim_scores[1:11]
+    movie_indices = [i[0] for i in sim_scores]
+    return(Response(movies['title'].iloc[movie_indices].to_json(orient='records'), mimetype='application.json'))
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=True)
