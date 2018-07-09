@@ -12,5 +12,9 @@ def homepage():
     <img src="http://loremflickr.com/600/400">
     """.format(time=the_time)
 
+@app.route('/')
+def test():
+    return 'Hello'
+
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=True)
