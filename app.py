@@ -12,7 +12,7 @@ def homepage():
     <img src="http://loremflickr.com/600/400">
     """.format(time=the_time)
 
-@app.route('/')
+@app.route('/test')
 def test():
     return 'Hello'
 
