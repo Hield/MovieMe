@@ -1,4 +1,4 @@
-from flask import Flask, Response
+from flask import Flask, Response, request
 from flask_cors import CORS
 from datetime import datetime
 import pandas as pd
@@ -34,6 +34,13 @@ def most_popular_movie():
     q_movies['score'] = q_movies.apply(weighted_rating, axis=1)
     q_movies = q_movies.sort_values('score', ascending=False)
     return(Response(q_movies[['title', 'vote_count', 'vote_average', 'score']].head(10).to_json(orient='records'), mimetype='application/json'))
+
+@app.route('/search')
+def search():
+    searchword = request.args.get('key', '')
+    movies = pd.read_csv('./tmdb_5000_movies.csv', low_memory=False)
+    titles = movies[movies['title'].str.contains(searchword, case=False)]['title'].head(10)
+    return(Response(titles.to_json(orient='records'), mimetype='application/json'))
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=True)
