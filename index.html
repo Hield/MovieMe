@@ -179,7 +179,7 @@
             var mostPopularTable = new Vue({
                 el: "#most-popular-table",
                 data: {
-                    sentences: []
+                    movies: []
                 },
                 methods: {
                     update: function() {
@@ -188,6 +188,7 @@
                         })
                             .done(function(data){
                                 mostPopularTable.movies = data;
+                                console.log(data[1]);
                             })
                             .fail(function(){
                                 console.log("fail to get most positive sentences");
