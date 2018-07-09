@@ -185,6 +185,7 @@
                     update: function() {
                         $.ajax({
                             url: 'https://secret-refuge-83195.herokuapp.com/most_popular'
+                            //url: 'http://0.0.0.0:5000/most_popular'
                         })
                             .done(function(data){
                                 mostPopularTable.movies = data;

@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, Response
 from flask_cors import CORS
 from datetime import datetime
 import pandas as pd
@@ -33,7 +33,7 @@ def most_popular_movie():
         return (v/(v+m) * R) + (m/(v+m) * C)
     q_movies['score'] = q_movies.apply(weighted_rating, axis=1)
     q_movies = q_movies.sort_values('score', ascending=False)
-    return(jsonify(q_movies[['title', 'vote_count', 'vote_average', 'score']].head(10).to_json(orient='records')))
+    return(Response(q_movies[['title', 'vote_count', 'vote_average', 'score']].head(10).to_json(orient='records'), mimetype='application/json'))
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=True)
