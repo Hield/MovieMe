@@ -1,6 +1,8 @@
 from flask import Flask
 from flask_cors import CORS
 from datetime import datetime
+import pandas as pd
+
 app = Flask(__name__)
 CORS(app)
 
@@ -17,6 +19,21 @@ def homepage():
 @app.route('/test')
 def test():
     return 'Hello'
+
+@app.route('/most_popular')
+def most_popular_movie():
+    movies = pd.read_csv('./tmdb_5000_movies.csv', low_memory=False)
+    C = movies['vote_average'].mean()
+    m = movies['vote_count'].quantile(0.50)
+    q_movies = movies.copy().loc[movies['vote_count'] >= m]
+    def weighted_rating(x, m=m, C=C):
+        v = x['vote_count']
+        R = x['vote_average']
+        # Calculation based on the IMDB formula
+        return (v/(v+m) * R) + (m/(v+m) * C)
+    q_movies['score'] = q_movies.apply(weighted_rating, axis=1)
+    q_movies = q_movies.sort_values('score', ascending=False)
+    return(q_movies[['title', 'vote_count', 'vote_average', 'score']].head(10).to_json(orient='records'))
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=True)

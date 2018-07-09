@@ -2,16 +2,171 @@
 <html>
 
     <head>
-        <title>Test Index</title>
+        <title>MovieMe</title>
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+
         <!-- JQuery -->
         <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+
+        <!-- Bootstrap JS -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+
+        <!-- Custom styles for this template -->
+        <link rel="stylesheet" href="https://getbootstrap.com/docs/4.0/examples/narrow-jumbotron/narrow-jumbotron.css">
+
+        <!-- Vue.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.24/vue.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.7.0/vue-resource.min.js"></script>
     </head>
 
     <body>
-        <h1 id='opening'></h1>
+        <!-- Container -->
+        <div class="container">
+            <!-- Header -->
+            <header class="header clearfix">
+            <nav>
+                <ul class="nav nav-pills float-right">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">Home <span class="sr-only">(current)</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#most_popular">Most popular movies</a>
+                    </li>
+                </ul>
+            </nav>
+            <h3 class="text-muted">LabelMe</h3>
+            </header>
+            
+            <!-- Main -->
+            <main role="main">
+
+                <div id="view-home" class="app-view">
+                    <div class="jumbotron">
+                        <h1 class="display-3">MovieMe</h1>
+                        <p class="lead">A movie recommender</p>
+                        <p><a id ="start-btn" class="btn btn-lg btn-success game-start-btn" href="#game" role="button">Try it now</a></p>
+                    </div>
+                </div>
+
+                <!-- Game View -->
+                <div id="view-game" class="app-view">
+                    <div id="sentence-box">
+                        <p id="sentence" data-id="">Test</p>
+                    </div>
+                    <div class="row" id="button-box">
+                        <div class="col-lg-2">
+                            <button class="btn label-btn btn-danger btn-block" data-label="-2">S.negative</button>
+                        </div>
+                        <div class="col-lg-2">
+                            <button class="btn label-btn btn-warning btn-block" data-label="-1">Negative</button>
+                        </div>
+                        <div class="col-lg-2">
+                            <button class="btn label-btn btn-default btn-block" data-label="0">Neutral</button>
+                        </div>
+                        <div class="col-lg-2">
+                            <button class="btn label-btn btn-info btn-block" data-label="1">Positive</button>
+                        </div>
+                        <div class="col-lg-2">
+                            <button class="btn label-btn btn-primary btn-block" data-label="2">S.positive</button>
+                        </div>
+                        <div class="col-lg-2">
+                            <button class="btn label-btn btn-block" data-label="skip">Skip</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- After game view -->
+                <div id="view-report" class="app-view">
+                    <h1>Report</h1>
+                    <p>Some facts here</p>
+                    <p>Top 10 positive sentences</p>
+                    <table id="report-table" class="table">
+                        <thead>
+                            <tr>
+                                <th>Index</th>
+                                <!--<th>Sentence ID</th>-->
+                                <th>Sentence</th>
+                                <th>Number of labels</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(index, sentence) in sentences">
+                                <td>{{ index + 1 }}</td>
+                                <!--<td>{{ sentence.id }}</td>-->
+                                <td>{{ sentence.content }}</td>
+                                <td>{{ sentence.vote_count }}</td>
+                                <td>{{ sentence.score }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button id="retry-btn" class="btn game-start-btn">Retry?</button>
+                </div>
+
+                <!-- Movie ranks view -->
+                <div id="view-most_popular" class="app-view">
+                    <h1>Top 10 most popular movies</h1>
+                    <table id="most-popular-table" class="table">
+                            <thead>
+                                <tr>
+                                    <th>Index</th>
+                                    <!--<th>Sentence ID</th>-->
+                                    <th>Title</th>
+                                    <th>Vote count</th>
+                                    <th>Vote average</th>
+                                    <th>Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(index, movie) in movies">
+                                    <td>{{ index + 1 }}</td>
+                                    <!--<td>{{ sentence.id }}</td>-->
+                                    <td>{{ movie.title }}</td>
+                                    <td>{{ movie.vote_count }}</td>
+                                    <td>{{ movie.vote_average }}</td>
+                                    <td>{{ movie.score }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <p>© MovieMe 2018</p>
+            </footer>
+
+        </div>
 
 
         <script>
+            // Start by hiding all the view and show only the chosen one
+            $(".app-view").hide();
+            if (location.hash == "" || location.hash == "#") {
+                $("#view-home").show();
+            } else if (location.hash == "#game") {
+                $(".nav-link.active").removeClass("active");
+                $("#view-game").show();
+                getSentences();
+            } else {
+                $(location.hash.replace(/^#/, '#view-')).show();
+                $(".nav-link.active").removeClass("active");
+                $("a[href='" + location.hash +"']").addClass("active")
+            }
+
+            // Change active in the nav
+            $(".nav-link").on("click", function(){
+                $(".nav-link.active").removeClass("active");
+                $(this).addClass("active");
+            });
+            // Check if location change
+            $(window).on('hashchange', function (e){
+                $(".app-view").hide();
+                $(location.hash.replace(/^#/, '#view-')).show();
+            });
+
             $.ajax({
                 url: 'https://secret-refuge-83195.herokuapp.com/test',
             })
@@ -19,6 +174,29 @@
                     console.log(data);
                     $('#opening').html(data);
                 })
+
+            // Report table
+            var mostPopularTable = new Vue({
+                el: "#most-popular-table",
+                data: {
+                    sentences: []
+                },
+                methods: {
+                    update: function() {
+                        $.ajax({
+                            url: 'https://secret-refuge-83195.herokuapp.com/most_popular'
+                        })
+                            .done(function(data){
+                                mostPopularTable.movies = data;
+                            })
+                            .fail(function(){
+                                console.log("fail to get most positive sentences");
+                            })
+                    }
+                }
+            })
+
+            mostPopularTable.update();
         </script>
     </body>
 
