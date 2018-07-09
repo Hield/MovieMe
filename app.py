@@ -41,7 +41,7 @@ def most_popular_movie():
 def search():
     searchword = request.args.get('key', '')
     movies = pd.read_csv('./tmdb_5000_movies.csv', low_memory=False)
-    titles = movies[movies['title'].str.contains(searchword, case=False)]['title'].head(10)
+    titles = movies[movies['title'].str.contains(searchword, case=False)]['title']
     return(Response(titles.to_json(orient='records'), mimetype='application/json'))
 
 @app.route('/recommend')
@@ -55,7 +55,9 @@ def recommend():
     cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
     #Construct a reverse map of indices and movie titles
     indices = pd.Series(movies.index, index=movies['title'].str.lower()).drop_duplicates()
-    idx = indices[title]
+    idx = indices.get(title, -1)
+    if idx == -1:
+        return 'Movie not found'
     sim_scores = list(enumerate(cosine_sim[idx]))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
     sim_scores = sim_scores[1:11]

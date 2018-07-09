@@ -17,8 +17,46 @@
         <link rel="stylesheet" href="https://getbootstrap.com/docs/4.0/examples/narrow-jumbotron/narrow-jumbotron.css">
 
         <!-- Vue.js -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.24/vue.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue-resource/0.7.0/vue-resource.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.min.js"></script>
+        <style>
+            /* The search field */
+            #search-bar {
+                background-image: url('/css/searchicon.png'); /* Add a search icon to input */
+                background-position: 10px 12px; /* Position the search icon */
+                background-repeat: no-repeat; /* Do not repeat the icon image */
+                width: 100%; /* Full-width */
+                font-size: 16px; /* Increase font-size */
+                padding: 12px 20px 12px 40px; /* Add some padding */
+                border: 1px solid #ddd; /* Add a grey border */
+                margin-bottom: 12px; /* Add some space below the input */
+            }
+
+            #search-list {
+                /* Remove default list styling */
+                list-style-type: none;
+                padding: 0;
+                margin: 0;
+                max-height: 200px;
+                overflow:hidden; 
+                overflow-y:scroll;
+            }
+            
+            #search-list li button {
+                width: 100%;
+                border: 1px solid #ddd; /* Add a border to all links */
+                margin-top: -1px; /* Prevent double borders */
+                background-color: #f6f6f6; /* Grey background color */
+                padding: 12px; /* Add some padding */
+                text-decoration: none; /* Remove default text underline */
+                font-size: 18px; /* Increase the font-size */
+                color: black; /* Add a black text color */
+                display: block; /* Make it into a block element to fill the whole list */
+            }
+            
+            #search-list li button:hover:not(.header) {
+                background-color: #eee; /* Add a hover effect to all links, except for headers */
+            }
+        </style>
     </head>
 
     <body>
@@ -43,71 +81,28 @@
             <main role="main">
 
                 <div id="view-home" class="app-view">
-                    <div class="jumbotron">
-                        <h1 class="display-3">MovieMe</h1>
-                        <p class="lead">A movie recommender</p>
-                        <p><a id ="start-btn" class="btn btn-lg btn-success game-start-btn" href="#game" role="button">Try it now</a></p>
-                    </div>
-                </div>
-
-                <!-- Game View -->
-                <div id="view-game" class="app-view">
-                    <div id="sentence-box">
-                        <p id="sentence" data-id="">Test</p>
-                    </div>
-                    <div class="row" id="button-box">
-                        <div class="col-lg-2">
-                            <button class="btn label-btn btn-danger btn-block" data-label="-2">S.negative</button>
-                        </div>
-                        <div class="col-lg-2">
-                            <button class="btn label-btn btn-warning btn-block" data-label="-1">Negative</button>
-                        </div>
-                        <div class="col-lg-2">
-                            <button class="btn label-btn btn-default btn-block" data-label="0">Neutral</button>
-                        </div>
-                        <div class="col-lg-2">
-                            <button class="btn label-btn btn-info btn-block" data-label="1">Positive</button>
-                        </div>
-                        <div class="col-lg-2">
-                            <button class="btn label-btn btn-primary btn-block" data-label="2">S.positive</button>
-                        </div>
-                        <div class="col-lg-2">
-                            <button class="btn label-btn btn-block" data-label="skip">Skip</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- After game view -->
-                <div id="view-report" class="app-view">
-                    <h1>Report</h1>
-                    <p>Some facts here</p>
-                    <p>Top 10 positive sentences</p>
-                    <table id="report-table" class="table">
-                        <thead>
-                            <tr>
-                                <th>Index</th>
-                                <!--<th>Sentence ID</th>-->
-                                <th>Sentence</th>
-                                <th>Number of labels</th>
-                                <th>Score</th>
-                            </tr>
-                        </thead>
+                    <h2>If you like</h2>
+                    <input type="text" id="search-bar" onkeyup="search()" placeholder="Search for movies..">
+                    <ul id="search-list">                           
+                        <li v-for="title in titles">
+                            <button class='text-left' onclick='choose_movie(this)'>{{ title }}</button>
+                        </li>
+                    </ul>
+                    <hr>
+                    <h2>I recommend</h2>
+                    <table id="recommend-table" class="table">
                         <tbody>
-                            <tr v-for="(index, sentence) in sentences">
+                            <tr v-for="(title, index) in titles">
                                 <td>{{ index + 1 }}</td>
-                                <!--<td>{{ sentence.id }}</td>-->
-                                <td>{{ sentence.content }}</td>
-                                <td>{{ sentence.vote_count }}</td>
-                                <td>{{ sentence.score }}</td>
+                                <td>{{ title }}</td>
                             </tr>
                         </tbody>
                     </table>
-                    <button id="retry-btn" class="btn game-start-btn">Retry?</button>
                 </div>
 
                 <!-- Movie ranks view -->
                 <div id="view-most_popular" class="app-view">
-                    <h1>Top 10 most popular movies</h1>
+                    <h2>Top 10 most popular movies</h1>
                     <table id="most-popular-table" class="table">
                             <thead>
                                 <tr>
@@ -120,7 +115,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(index, movie) in movies">
+                                <tr v-for="(movie, index) in movies">
                                     <td>{{ index + 1 }}</td>
                                     <!--<td>{{ sentence.id }}</td>-->
                                     <td>{{ movie.title }}</td>
@@ -167,13 +162,58 @@
                 $(location.hash.replace(/^#/, '#view-')).show();
             });
 
-            $.ajax({
-                url: 'https://secret-refuge-83195.herokuapp.com/test',
+            // Recommend a movie based on movie chosen
+            function choose_movie(e) {
+                var chosen_movie = $(e).html();
+                searchList.titles = [];
+                $('#search-bar').val(chosen_movie);
+                recommendTable.update();
+            }
+
+            // Search list
+            var searchList = new Vue({
+                el: "#search-list",
+                data: {
+                    titles: []
+                },
+                methods: {
+                    update: function() {
+                        $.ajax({
+                            //url: 'https://secret-refuge-83195.herokuapp.com/search?key=' + $('#search-bar').val()
+                            url: 'http://0.0.0.0:5000/search?key=' + $('#search-bar').val().toLowerCase()
+                        })
+                            .done(function(data){
+                                searchList.titles = data;
+                            })
+                            .fail(function(){
+                                console.log("fail to seasrch for movies");
+                            })
+                    }
+                }
             })
-                .done(function(data){
-                    console.log(data);
-                    $('#opening').html(data);
-                })
+
+            searchList.update();
+
+            // Recommend table
+            var recommendTable = new Vue({
+                el: "#recommend-table",
+                data: {
+                    titles: []
+                },
+                methods: {
+                    update: function() {
+                        $.ajax({
+                            url: 'http://0.0.0.0:5000/recommend?title=' + $('#search-bar').val().toLowerCase()
+                        })
+                            .done(function(data){
+                                recommendTable.titles = data;
+                            })
+                            .fail(function(){
+                                console.log("fail to get recommendation");
+                            })
+                    }
+                }
+            })
 
             // Report table
             var mostPopularTable = new Vue({
@@ -184,21 +224,24 @@
                 methods: {
                     update: function() {
                         $.ajax({
-                            url: 'https://secret-refuge-83195.herokuapp.com/most_popular'
-                            //url: 'http://0.0.0.0:5000/most_popular'
+                            //url: 'https://secret-refuge-83195.herokuapp.com/most_popular'
+                            url: 'http://0.0.0.0:5000/most_popular'
                         })
                             .done(function(data){
                                 mostPopularTable.movies = data;
-                                console.log(data[1]);
                             })
                             .fail(function(){
-                                console.log("fail to get most positive sentences");
+                                console.log("fail to get most popular movies");
                             })
                     }
                 }
             })
 
             mostPopularTable.update();
+
+            function search() {
+                searchList.update();
+            }
         </script>
     </body>
 
