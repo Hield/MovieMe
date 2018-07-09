@@ -179,8 +179,8 @@
                 methods: {
                     update: function() {
                         $.ajax({
-                            //url: 'https://secret-refuge-83195.herokuapp.com/search?key=' + $('#search-bar').val()
-                            url: 'http://0.0.0.0:5000/search?key=' + $('#search-bar').val().toLowerCase()
+                            url: 'https://secret-refuge-83195.herokuapp.com/search?key=' + $('#search-bar').val()
+                            //url: 'http://0.0.0.0:5000/search?key=' + $('#search-bar').val().toLowerCase()
                         })
                             .done(function(data){
                                 searchList.titles = data;
@@ -203,7 +203,8 @@
                 methods: {
                     update: function() {
                         $.ajax({
-                            url: 'http://0.0.0.0:5000/recommend?title=' + $('#search-bar').val().toLowerCase()
+                            //url: 'http://0.0.0.0:5000/recommend?title=' + $('#search-bar').val().toLowerCase()
+                            url: 'https://secret-refuge-83195.herokuapp.com/recommend?title=' + $('#search-bar').val().toLowerCase()
                         })
                             .done(function(data){
                                 recommendTable.titles = data;
@@ -224,8 +225,8 @@
                 methods: {
                     update: function() {
                         $.ajax({
-                            //url: 'https://secret-refuge-83195.herokuapp.com/most_popular'
-                            url: 'http://0.0.0.0:5000/most_popular'
+                            url: 'https://secret-refuge-83195.herokuapp.com/most_popular'
+                            //url: 'http://0.0.0.0:5000/most_popular'
                         })
                             .done(function(data){
                                 mostPopularTable.movies = data;
