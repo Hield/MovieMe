@@ -3,6 +3,8 @@
 
     <head>
         <title>Test Index</title>
+        <!-- JQuery -->
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
     </head>
 
     <body>
@@ -10,7 +12,12 @@
 
 
         <script>
-            console.log("Hello")
+            $.ajax({
+                url: 'https://secret-refuge-83195.herokuapp.com/test',
+            })
+                .done(function(data){
+                    console.log(data);
+                })
         </script>
     </body>
 
